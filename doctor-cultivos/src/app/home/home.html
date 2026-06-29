@@ -1,0 +1,467 @@
+<div class="app-layout">
+
+  <!-- ═══ SIDEBAR: CLIMA ═══ -->
+  <aside class="sidebar">
+
+    <!-- ─── CLIMA ─── -->
+    <div class="sidebar-section">
+      <div class="sidebar-header">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"/><path d="M12 1v2"/><path d="M12 21v2"/><path d="M4.22 4.22l1.42 1.42"/><path d="M18.36 18.36l1.42 1.42"/><path d="M1 12h2"/><path d="M21 12h2"/><path d="M4.22 19.78l1.42-1.42"/><path d="M18.36 5.64l1.42-1.42"/>
+        </svg>
+        <h2 class="sidebar-title">Clima</h2>
+      </div>
+
+      @if (climateState() === 'loading') {
+        <div class="climate-loading">
+          <div class="mini-spinner"></div>
+          <span>Obteniendo clima...</span>
+        </div>
+      }
+
+      @if (climateState() === 'loaded') {
+        @let w = weatherData();
+        @if (w) {
+        <div class="climate-card">
+          <div class="climate-location">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            <span>{{ w.city }}</span>
+          </div>
+
+          <div class="climate-temp-row">
+            <span class="climate-temp">{{ w.currentTemp }}°</span>
+            <span class="climate-desc">{{ w.weatherDescription }}</span>
+          </div>
+
+          <div class="climate-feels">Sensación {{ w.feelsLike }}°</div>
+
+          <div class="climate-extremes">
+            <div class="ce-item">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 5v14"/><path d="M18 13l-6 6-6-6"/>
+              </svg>
+              <span class="ce-value">{{ w.dailyMax }}°</span>
+              <span class="ce-label">Máx</span>
+            </div>
+            <div class="ce-item">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 5v14"/><path d="M6 11l6-6 6 6"/>
+              </svg>
+              <span class="ce-value">{{ w.dailyMin }}°</span>
+              <span class="ce-label">Mín</span>
+            </div>
+          </div>
+        </div>
+
+        @if (w.forecast.length > 0) {
+          <div class="forecast-section">
+            <div class="forecast-scroll">
+              @for (day of w.forecast; track day.date) {
+                <div class="fc-card">
+                  <span class="fc-day">{{ day.dayName }}</span>
+                  <span class="fc-icon">
+                    @if (day.weatherCode === 0) { ☀️ }
+                    @else if (day.weatherCode <= 3) { ⛅ }
+                    @else if (day.weatherCode <= 48) { 🌫️ }
+                    @else if (day.weatherCode <= 65) { 🌧️ }
+                    @else if (day.weatherCode <= 75) { 🌨️ }
+                    @else { ⛈️ }
+                  </span>
+                  <span class="fc-max">{{ day.max }}°</span>
+                  <span class="fc-min">{{ day.min }}°</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+        }
+      }
+
+      @if (climateState() === 'error') {
+        <div class="climate-error">
+          <span>⚠️</span>
+          <span>{{ climateError() }}</span>
+        </div>
+      }
+    </div>
+
+  </aside>
+
+  <!-- ═══ MAIN: DIAGNÓSTICO ═══ -->
+  <main class="main-content">
+
+    @if (state() === 'upload') {
+
+      <!-- ─── ESTADO UPLOAD ─── -->
+      <div class="upload-container">
+        <div class="upload-header">
+          <h1 class="upload-heading">Diagnóstico Inteligente</h1>
+          <p class="upload-subheading">Sube la imagen de tu planta para obtener un diagnóstico mediante Inteligencia Artificial.</p>
+        </div>
+
+        @if (!selectedFile()) {
+          <div
+            class="drop-zone"
+            [class.drag-over]="isDragOver()"
+            (click)="triggerFileInput()"
+            (dragover)="onDragOver($event)"
+            (dragleave)="onDragLeave($event)"
+            (drop)="onDrop($event)"
+          >
+            <input
+              #fileInput
+              hidden
+              type="file"
+              accept="image/*"
+              capture="environment"
+              (change)="onFileSelected($event)"
+            />
+
+            <div class="drop-icon">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+            </div>
+
+            <p class="drop-title">Arrastra la imagen aquí</p>
+            <p class="drop-subtitle">o haz clic para seleccionarla</p>
+
+            <div class="drop-formats">
+              <span>JPG</span>
+              <span>PNG</span>
+              <span>WEBP</span>
+            </div>
+            <p class="drop-limit">Tamaño máximo: 10 MB</p>
+          </div>
+        }
+
+        @if (selectedFile(); as file) {
+          <div class="preview-card">
+            @if (previewUrl(); as url) {
+              <div class="preview-img-wrapper">
+                <img [src]="url" alt="Vista previa" class="preview-img" />
+              </div>
+            }
+            <div class="preview-info">
+              <div class="preview-file-info">
+                <span class="preview-file-name">{{ file.name }}</span>
+                <span class="preview-file-size">{{ formatFileSize(file.size) }}</span>
+              </div>
+              <button class="btn-change" (click)="clearFile()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 4H8l-1 3H3v2h18V4z"/>
+                  <path d="M4 21l2-10h12l2 10"/>
+                </svg>
+                Cambiar
+              </button>
+            </div>
+          </div>
+        }
+
+        <button
+          class="btn-diagnose"
+          [class.btn-disabled]="!selectedFile() || !locationSvc.gpsReady()"
+          [disabled]="!selectedFile() || !locationSvc.gpsReady()"
+          (click)="analyze()"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+          </svg>
+          @if (!locationSvc.gpsReady()) {
+            Permite la ubicación primero
+          } @else {
+            Diagnosticar planta
+          }
+        </button>
+      </div>
+
+    }
+
+    @if (state() === 'loading') {
+
+      <!-- ─── ESTADO LOADING (diagnóstico en backend) ─── -->
+      <div class="loader-container">
+        <div class="scanner-ring">
+          <div class="scanner-ring-inner"></div>
+          <div class="leaf-icon">🌿</div>
+          <div class="scan-line"></div>
+        </div>
+
+        <div class="loader-text-group">
+          <p class="loading-text">Analizando con inteligencia artificial...</p>
+          <div class="loading-dots">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+
+        <p class="loading-subtext">Enviando imagen al servidor</p>
+
+        <div class="loading-progress">
+          <div class="loading-progress-bar"></div>
+        </div>
+
+        <div class="loading-steps">
+          <div class="loading-step done"><span class="step-dot"></span><span>Preprocesando imagen</span></div>
+          <div class="loading-step active"><span class="step-dot"></span><span>Consultando API de diagnóstico</span></div>
+          <div class="loading-step"><span class="step-dot"></span><span>Analizando resultados</span></div>
+        </div>
+      </div>
+
+    }
+
+    @if (state() === 'generando') {
+
+      <!-- ─── ESTADO GENERANDO (Groq) ─── -->
+      <div class="loader-container">
+        <div class="scanner-ring">
+          <div class="scanner-ring-inner"></div>
+          <div class="leaf-icon">🤖</div>
+          <div class="scan-line"></div>
+        </div>
+
+        <div class="loader-text-group">
+          <p class="loading-text">Generando recomendaciones con IA...</p>
+          <div class="loading-dots">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+
+        <p class="loading-subtext">Consultando Groq para un tratamiento personalizado</p>
+
+        <div class="loading-progress">
+          <div class="loading-progress-bar"></div>
+        </div>
+      </div>
+
+    }
+
+    @if (state() === 'error') {
+
+      <!-- ─── ESTADO ERROR ─── -->
+      <div class="upload-container">
+        <div class="result-card error-card">
+          <div class="error-card-content">
+            <span class="error-icon">❌</span>
+            <p class="error-message">{{ errorMessage() }}</p>
+          </div>
+          <button class="btn-change" (click)="resetApp()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+              <path d="M3 3v5h5"/>
+            </svg>
+            Intentar de nuevo
+          </button>
+        </div>
+      </div>
+
+    }
+
+    @if (state() === 'results') {
+      @let data = resultData();
+      @let w = weatherData();
+
+      <div class="results-header">
+        <button class="btn-icon" (click)="resetApp()" aria-label="Nuevo diagnóstico">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+            <path d="M3 3v5h5"/>
+          </svg>
+        </button>
+        <div>
+          <h2 class="results-heading">Resultados</h2>
+          <span class="results-date">{{ fechaActual }}</span>
+        </div>
+      </div>
+
+      <!-- ─── DIAGNÓSTICO ─── -->
+      <div class="result-card fade-in-up" style="animation-delay: 0s">
+        <div class="card-badge">🧬 Diagnóstico</div>
+        <h3 class="card-title">{{ data.plaga }}</h3>
+        <p class="card-subtitle">
+          <span class="label">Clase técnica:</span> {{ data.clase_tecnica }}
+        </p>
+      </div>
+
+      @if (previewUrl(); as imgUrl) {
+        <div class="result-card result-image-card fade-in-up" style="animation-delay: 0.08s">
+          <div class="card-badge">📷 Imagen analizada</div>
+          <div class="result-img-wrapper">
+            <img [src]="imgUrl" alt="Imagen de la planta analizada" class="result-img" />
+          </div>
+        </div>
+      }
+
+      <!-- ─── CLIMA REAL (WeatherService) ─── -->
+      @if (w) {
+        <div class="result-card climate-summary-card fade-in-up" style="animation-delay: 0.16s">
+          <div class="card-badge">🌤️ Clima actual del cultivo</div>
+          <div class="climate-summary-grid">
+            <div class="climate-summary-item">
+              <span class="climate-summary-icon">📍</span>
+              <span class="climate-summary-value">{{ w.city }}</span>
+              <span class="climate-summary-label">Ubicación</span>
+            </div>
+            <div class="climate-summary-item">
+              <span class="climate-summary-icon">🌡️</span>
+              <span class="climate-summary-value">{{ w.currentTemp }}°</span>
+              <span class="climate-summary-label">Temperatura</span>
+            </div>
+            <div class="climate-summary-item">
+              <span class="climate-summary-icon">💧</span>
+              <span class="climate-summary-value">{{ w.humidity ?? '—' }}%</span>
+              <span class="climate-summary-label">Humedad</span>
+            </div>
+            <div class="climate-summary-item">
+              <span class="climate-summary-icon">🌥️</span>
+              <span class="climate-summary-value">{{ w.weatherDescription }}</span>
+              <span class="climate-summary-label">Condición</span>
+            </div>
+            @if (w.windSpeed) {
+              <div class="climate-summary-item">
+                <span class="climate-summary-icon">💨</span>
+                <span class="climate-summary-value">{{ w.windSpeed }} km/h</span>
+                <span class="climate-summary-label">Viento</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- ─── FORMULARIO ECONÓMICO ─── -->
+      @if (groqPendiente() && !cargandoEstimacion()) {
+        <div class="estimacion-card fade-in-up" style="animation-delay: 0.24s">
+          <div class="estimacion-header">
+            <span class="estimacion-icon">📊</span>
+            <div>
+              <h3 class="estimacion-title">Mejorar la estimación económica</h3>
+              <p class="estimacion-desc">Podemos calcular una pérdida aproximada para tu cultivo utilizando el diagnóstico obtenido, las condiciones climáticas actuales y la información de tu parcela.</p>
+              <p class="estimacion-opcional">Esta información es completamente opcional.</p>
+            </div>
+          </div>
+
+          <div class="estimacion-opciones">
+            <label class="radio-option" [class.radio-active]="estimacionTipo() === 'plantas'">
+              <input type="radio" name="estimacionTipo" value="plantas" [checked]="estimacionTipo() === 'plantas'" (change)="estimacionTipo.set('plantas')" />
+              <span class="radio-label">Número de plantas</span>
+            </label>
+            <label class="radio-option" [class.radio-active]="estimacionTipo() === 'area'">
+              <input type="radio" name="estimacionTipo" value="area" [checked]="estimacionTipo() === 'area'" (change)="estimacionTipo.set('area')" />
+              <span class="radio-label">Área cultivada (hectáreas)</span>
+            </label>
+          </div>
+
+          @if (estimacionTipo() === 'plantas') {
+            <div class="estimacion-input-group">
+              <label class="estimacion-input-label">Cantidad aproximada</label>
+              <input
+                type="number"
+                min="1"
+                step="1"
+                class="estimacion-input"
+                placeholder="Ej: 500"
+                [value]="cantidadPlantas() ?? ''"
+                (input)="cantidadPlantas.set(parseNum($any($event.target).value))"
+              />
+            </div>
+          }
+
+          @if (estimacionTipo() === 'area') {
+            <div class="estimacion-input-group">
+              <label class="estimacion-input-label">Área cultivada</label>
+              <div class="estimacion-input-suffix">
+                <input
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  class="estimacion-input"
+                  placeholder="Ej: 2.5"
+                  [value]="areaHectareas() ?? ''"
+                  (input)="areaHectareas.set(parseNum($any($event.target).value))"
+                />
+                <span class="estimacion-suffix">ha</span>
+              </div>
+            </div>
+          }
+
+          <div class="estimacion-input-group">
+            <label class="estimacion-input-label">Precio aproximado por kilogramo <span class="estimacion-opcional-badge">opcional</span></label>
+            <div class="estimacion-input-suffix">
+              <span class="estimacion-suffix estimacion-suffix-left">S/</span>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                class="estimacion-input estimacion-input--left-pad"
+                placeholder="Ej: 2.50"
+                [value]="precioKg() ?? ''"
+                (input)="precioKg.set(parseNum($any($event.target).value))"
+              />
+            </div>
+            <p class="estimacion-input-hint">Si no conoces este dato puedes dejarlo vacío.</p>
+          </div>
+
+          <div class="estimacion-actions">
+            <button class="btn-estimacion" (click)="enviarEstimacion()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              Continuar con la estimación
+            </button>
+            <button class="btn-estimacion-skip" (click)="omitirEstimacion()">
+              Omitir
+            </button>
+          </div>
+        </div>
+      }
+
+      <!-- ─── INLINE LOADING (Groq generando) ─── -->
+      @if (cargandoEstimacion()) {
+        <div class="inline-loading fade-in-up" style="animation-delay: 0.24s">
+          <div class="inline-loading-spinner"></div>
+          <div class="inline-loading-text">
+            <p class="inline-loading-title">Generando análisis personalizado...</p>
+            <p class="inline-loading-sub">La IA está analizando los datos de tu cultivo y las condiciones climáticas</p>
+          </div>
+        </div>
+      }
+
+      <!-- ─── SECCIONES DEL TRATAMIENTO (Groq) ─── -->
+      @if (tratamientoSections().length > 0) {
+        @for (seccion of tratamientoSections(); track $index) {
+          <div
+            class="report-card fade-in-up"
+            [attr.data-card]="getCardType(seccion.icon)"
+            [style.animation-delay]="(0.32 + $index * 0.1) + 's'"
+          >
+            <div class="report-card-header">
+              <span class="report-card-icon">{{ seccion.icon }}</span>
+              <h3 class="report-card-title">{{ seccion.titulo }}</h3>
+            </div>
+            <div class="report-card-body" [innerHTML]="formatearContenido(seccion.contenido)"></div>
+          </div>
+        }
+        @if (usandoGroq()) {
+          <p class="groq-disclaimer">🤖 Tratamiento generado con asistencia de Inteligencia Artificial. Revise las recomendaciones antes de aplicarlas en campo.</p>
+        }
+      }
+
+      @if (tratamientoSections().length > 0) {
+        <button class="btn-primary" (click)="resetApp()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+            <path d="M3 3v5h5"/>
+          </svg>
+          Nuevo diagnóstico
+        </button>
+        <p class="disclaimer">Resultados basados en IA. Consulte a un especialista agronómico.</p>
+      }
+    }
+
+  </main>
+
+</div>

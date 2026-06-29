@@ -1,0 +1,240 @@
+<div class="welcome-screen">
+
+  <!-- ─── BACKGROUND LAYERS ─── -->
+  <div class="bg-layer">
+    <div class="bg-image"></div>
+    <div class="bg-overlay"></div>
+    <div class="bg-glow"></div>
+  </div>
+
+  <!-- ─── ESTADO INICIAL ─── -->
+  @if (state() === 'initial') {
+    <div class="welcome-content">
+      <div class="logo-section">
+        <div class="logo-ring">
+          <img src="/logo.png" alt="AgTech" class="logo-img" />
+        </div>
+        <h1 class="welcome-title">AgTech</h1>
+        <p class="welcome-subtitle">Diagnostica enfermedades en tus cultivos utilizando Inteligencia Artificial y recibe recomendaciones personalizadas según las condiciones climáticas reales de tu ubicación.</p>
+      </div>
+
+      <div class="feature-cards">
+        <div class="feature-card" style="animation-delay: 0.1s">
+          <div class="feature-icon">🧠</div>
+          <div class="feature-body">
+            <h3 class="feature-title">Diagnóstico con IA</h3>
+            <p class="feature-desc">El sistema analiza fotografías de tus cultivos utilizando un modelo de Inteligencia Artificial entrenado para reconocer enfermedades.</p>
+          </div>
+        </div>
+        <div class="feature-card" style="animation-delay: 0.2s">
+          <div class="feature-icon">🌤️</div>
+          <div class="feature-body">
+            <h3 class="feature-title">Análisis climático</h3>
+            <p class="feature-desc">Utilizamos tu ubicación para conocer las condiciones climáticas actuales y personalizar las recomendaciones según el ambiente donde se encuentra tu cultivo.</p>
+          </div>
+        </div>
+        <div class="feature-card" style="animation-delay: 0.3s">
+          <div class="feature-icon">📊</div>
+          <div class="feature-body">
+            <h3 class="feature-title">Estimación de impacto</h3>
+            <p class="feature-desc">Después del diagnóstico podrás obtener una estimación del riesgo de propagación y del posible impacto económico sobre tu cultivo.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="location-prompt">
+        <div class="prompt-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+        </div>
+        <h2 class="prompt-title">Ubicación</h2>
+        <p class="prompt-desc">
+          Permítenos acceder a tu ubicación para brindarte información climática en tiempo real y recomendaciones personalizadas para tu cultivo.
+        </p>
+        <button class="btn-location" (click)="requestLocation()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+          Permitir ubicación
+        </button>
+      </div>
+
+      <p class="footer-note">Tu privacidad es importante. Solo usamos tu ubicación para el clima.</p>
+    </div>
+  }
+
+  <!-- ─── SOLICITANDO UBICACIÓN ─── -->
+  @if (state() === 'requesting') {
+    <div class="welcome-content">
+      <div class="loader-state">
+        <div class="loader-spinner">
+          <div class="spinner-ring"></div>
+          <div class="spinner-icon">📍</div>
+        </div>
+        <p class="loader-text">Solicitando ubicación...</p>
+        <p class="loader-hint">Espera mientras obtenemos tu posición</p>
+      </div>
+    </div>
+  }
+
+  <!-- ─── CARGANDO CLIMA ─── -->
+  @if (state() === 'loading') {
+    <div class="welcome-content">
+      <div class="loader-state">
+        <div class="loader-spinner">
+          <div class="spinner-ring"></div>
+          <div class="spinner-icon">🌤️</div>
+        </div>
+        <p class="loader-text">Consultando el clima...</p>
+        <div class="loading-dots">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ─── CLIMA CARGADO ─── -->
+  @if (state() === 'loaded') {
+    @let w = weatherData();
+    @if (w) {
+      <div class="welcome-content">
+        <div class="weather-hero">
+          <div class="weather-city">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            <span>{{ w.city }}</span>
+          </div>
+
+          <div class="weather-main">
+            <div class="weather-temp-group">
+              <span class="weather-temp">{{ w.currentTemp }}°</span>
+              <span class="weather-desc">{{ w.weatherDescription }}</span>
+            </div>
+            <div class="weather-feels">Sensación térmica {{ w.feelsLike }}°</div>
+          </div>
+
+          <div class="weather-extremes">
+            <div class="extreme-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 5v14"/>
+                <path d="M18 13l-6 6-6-6"/>
+              </svg>
+              <span>{{ w.dailyMax }}°</span>
+              <span class="extreme-label">Máx</span>
+            </div>
+            <div class="extreme-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 5v14"/>
+                <path d="M6 11l6-6 6 6"/>
+              </svg>
+              <span>{{ w.dailyMin }}°</span>
+              <span class="extreme-label">Mín</span>
+            </div>
+          </div>
+        </div>
+
+        @if (w.forecast.length > 0) {
+          <div class="forecast-section">
+            <h3 class="forecast-title">Pronóstico</h3>
+            <div class="forecast-scroll">
+              @for (day of w.forecast; track day.date) {
+                <div class="forecast-card">
+                  <span class="forecast-day">{{ day.dayName }}</span>
+                  <span class="forecast-icon">
+                    @if (day.weatherCode === 0) { ☀️ }
+                    @else if (day.weatherCode <= 3) { ⛅ }
+                    @else if (day.weatherCode <= 48) { 🌫️ }
+                    @else if (day.weatherCode <= 65) { 🌧️ }
+                    @else if (day.weatherCode <= 75) { 🌨️ }
+                    @else { ⛈️ }
+                  </span>
+                  <div class="forecast-temps">
+                    <span class="forecast-max">{{ day.max }}°</span>
+                    <span class="forecast-min">{{ day.min }}°</span>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <button class="btn-continue" (click)="continueToApp()">
+          Comenzar diagnóstico
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14"/>
+            <path d="M12 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </div>
+    }
+  }
+
+  <!-- ─── PERMISO DENEGADO ─── -->
+  @if (state() === 'denied') {
+    <div class="welcome-content">
+      <div class="error-state">
+        <div class="error-icon">🔒</div>
+        <h2 class="error-title">Permiso denegado</h2>
+        <p class="error-desc">
+          No podemos acceder a tu ubicación. Puedes continuar sin información climática.
+        </p>
+        <button class="btn-continue" (click)="continueToApp()">
+          Continuar sin clima
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14"/>
+            <path d="M12 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- ─── NO SOPORTADO ─── -->
+  @if (state() === 'unsupported') {
+    <div class="welcome-content">
+      <div class="error-state">
+        <div class="error-icon">📡</div>
+        <h2 class="error-title">No disponible</h2>
+        <p class="error-desc">
+          Tu navegador no soporta geolocalización. Puedes continuar sin clima.
+        </p>
+        <button class="btn-continue" (click)="continueToApp()">
+          Continuar sin clima
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14"/>
+            <path d="M12 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- ─── ERROR ─── -->
+  @if (state() === 'error') {
+    <div class="welcome-content">
+      <div class="error-state">
+        <div class="error-icon">⚠️</div>
+        <h2 class="error-title">Algo salió mal</h2>
+        <p class="error-desc">{{ errorMessage() }}</p>
+        <div class="error-actions">
+          <button class="btn-location" (click)="retry()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+              <path d="M3 3v5h5"/>
+            </svg>
+            Intentar de nuevo
+          </button>
+          <button class="btn-continue btn-ghost" (click)="continueToApp()">
+            Continuar sin clima
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+</div>

@@ -1,0 +1,141 @@
+<div class="diag-shell">
+  <div class="diag-container">
+
+    <!-- HEADER -->
+    <div class="diag-header">
+      <a class="diag-back" routerLink="/">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5"/>
+          <path d="M12 19l-7-7 7-7"/>
+        </svg>
+      </a>
+      <div>
+        <h1 class="diag-title">Diagnóstico IA</h1>
+        <p class="diag-subtitle">Análisis inteligente de cultivos</p>
+      </div>
+    </div>
+
+    <!-- FILE INPUT / UPLOAD -->
+    <div class="diag-card upload-card" (click)="fileInput.click()">
+      <input
+        #fileInput
+        type="file"
+        accept="image/*"
+        capture="environment"
+        (change)="onFileSelected($event)"
+        hidden
+      />
+      @if (!previewUrl()) {
+        <div class="upload-placeholder">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          <p class="upload-text">Toca para subir o capturar una foto de la hoja</p>
+        </div>
+      } @else {
+        <div class="preview-wrapper">
+          <img [src]="previewUrl()" alt="Vista previa" class="preview-img" />
+          <div class="preview-overlay">
+            <span>Cambiar imagen</span>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- GPS STATUS -->
+    <div class="diag-card gps-card">
+      <div class="gps-row">
+        <span class="gps-dot" [class.gps-active]="gpsReady()"></span>
+        <span class="gps-label">Coordenadas GPS</span>
+      </div>
+      <div class="gps-coords">
+        @if (gpsReady()) {
+          <span class="coord">Lat: {{ latitude() }}</span>
+          <span class="coord-sep">|</span>
+          <span class="coord">Lon: {{ longitude() }}</span>
+        } @else {
+          <span class="coord coord-muted">Esperando señal GPS...</span>
+        }
+      </div>
+    </div>
+
+    <!-- SUBMIT BUTTON -->
+    <button
+      class="diag-btn"
+      [class.diag-btn-loading]="loading()"
+      [disabled]="loading() || !selectedFile()"
+      (click)="enviarDiagnostico()"
+    >
+      @if (loading()) {
+        <span class="btn-spinner"></span>
+        <span>🔍 Analizando en la nube con IA...</span>
+      } @else {
+        <span>🚀 Analizar Planta</span>
+      }
+    </button>
+
+    <!-- RESULT CARD -->
+    @if (resultado(); as r) {
+      <div class="diag-card result-card">
+        @if (previewUrl()) {
+          <div class="result-section result-image-section">
+            <span class="result-badge">📸 Imagen analizada</span>
+            <img [src]="previewUrl()" alt="Hoja analizada" class="result-img" />
+          </div>
+        }
+
+        <div class="result-section">
+          <span class="result-badge">🧬 Enfermedad</span>
+          <h2 class="result-plaga">{{ r.plaga }}</h2>
+          <p class="result-clase">
+            <span class="label">Clase técnica:</span> {{ r.clase_tecnica }}
+          </p>
+        </div>
+
+        <div class="result-section">
+          <span class="result-badge">🌤️ Clima</span>
+          <div class="weather-grid">
+            <div class="weather-item">
+              <span class="weather-val">{{ r.clima.temperatura }}°C</span>
+              <span class="weather-lbl">Temperatura</span>
+            </div>
+            <div class="weather-item">
+              <span class="weather-val">{{ r.clima.humedad }}%</span>
+              <span class="weather-lbl">Humedad</span>
+            </div>
+            <div class="weather-item">
+              <span class="weather-val">{{ r.clima.condicion }}</span>
+              <span class="weather-lbl">Condición</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="result-section">
+          <span class="result-badge">💊 Tratamiento</span>
+          <div class="treatment-box">{{ r.tratamiento }}</div>
+        </div>
+
+        @if (r.regla_negocio.alerta_riesgo) {
+          <div class="alert-banner">
+            <div class="alert-icon">⚠️</div>
+            <div class="alert-content">
+              <strong>¡Alerta de pérdida financiera!</strong>
+              <span>Riesgo estimado: {{ formatSoles(r.regla_negocio.perdida_soles) }}</span>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ERROR MESSAGE -->
+    @if (error()) {
+      <div class="error-card">
+        <span>❌ {{ error() }}</span>
+        <button class="error-retry" (click)="error.set('')">Cerrar</button>
+      </div>
+    }
+
+  </div>
+</div>

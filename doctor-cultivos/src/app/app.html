@@ -1,0 +1,5 @@
+@if (showWelcome()) {
+  <app-welcome (done)="onWelcomeDone()" />
+} @else {
+  <router-outlet />
+}

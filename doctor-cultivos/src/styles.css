@@ -1,0 +1,100 @@
+:root {
+  --primary: #059669;
+  --primary-light: #34d399;
+  --primary-dark: #064e3b;
+  --bg-deep: #021a12;
+  --bg-gradient: linear-gradient(160deg, #021a12 0%, #064e3b 50%, #0c1a2e 100%);
+  --text: #ffffff;
+  --text-secondary: #cbd5e1;
+  --text-muted: #64748b;
+  --danger: #ef4444;
+  --danger-glow: rgba(239, 68, 68, 0.5);
+  --card-bg: rgba(255, 255, 255, 0.07);
+  --card-bg-hover: rgba(255, 255, 255, 0.12);
+  --card-border: rgba(255, 255, 255, 0.1);
+  --card-border-hover: rgba(255, 255, 255, 0.2);
+  --glass-blur: blur(20px);
+  --glass-blur-sm: blur(12px);
+  --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
+  --radius: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+  --font-display: 'Plus Jakarta Sans', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  background: var(--bg-deep);
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg-gradient);
+  color: var(--text);
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+  overflow-x: hidden;
+  position: relative;
+}
+
+body::before,
+body::after {
+  content: '';
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::before {
+  width: 700px;
+  height: 700px;
+  background: radial-gradient(circle, rgba(5, 150, 105, 0.12), transparent 70%);
+  top: -250px;
+  right: -150px;
+  animation: floatGlow 12s ease-in-out infinite alternate;
+}
+
+body::after {
+  width: 550px;
+  height: 550px;
+  background: radial-gradient(circle, rgba(52, 211, 153, 0.08), transparent 70%);
+  bottom: -200px;
+  left: -100px;
+  animation: floatGlow 10s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes floatGlow {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(40px, -30px) scale(1.1);
+  }
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+input,
+textarea {
+  font-family: inherit;
+}
