@@ -185,6 +185,7 @@ export class Home implements OnInit {
 
     if (!necesitaIA) {
       this.resultData.set(res);
+      this.tratamientoSections.set(this.buildBackendSections(res));
       this.state.set('results');
       return;
     }
@@ -192,6 +193,35 @@ export class Home implements OnInit {
     this.resultData.set(res);
     this.groqPendiente.set(true);
     this.state.set('results');
+  }
+
+  private buildBackendSections(res: DiagnosticoResponse): TratamientoSection[] {
+    const secciones: TratamientoSection[] = [];
+
+    secciones.push({
+      icon: '💊',
+      titulo: 'Tratamiento recomendado',
+      contenido: res.tratamiento,
+    });
+
+    const riesgoTexto = res.regla_negocio.alerta_riesgo
+      ? '⚠️ Se ha detectado un nivel de riesgo alto. Se recomienda tomar medidas inmediatas.'
+      : '✅ No se detectan condiciones de riesgo elevado en este momento.';
+    secciones.push({
+      icon: '⚠️',
+      titulo: 'Nivel de riesgo',
+      contenido: riesgoTexto,
+    });
+
+    if (res.regla_negocio.perdida_soles > 0) {
+      secciones.push({
+        icon: '💰',
+        titulo: 'Pérdida estimada',
+        contenido: `La pérdida económica estimada es de ${this.formatSoles(res.regla_negocio.perdida_soles)}.`,
+      });
+    }
+
+    return secciones;
   }
 
   private construirContexto(): GroqContext {
@@ -280,6 +310,7 @@ export class Home implements OnInit {
       '💊': 'tratamiento',
       '🛡️': 'prevencion',
       '📊': 'impacto',
+      '💰': 'impacto',
       '⚠️': 'advertencias',
     };
     return map[icon] || 'default';
